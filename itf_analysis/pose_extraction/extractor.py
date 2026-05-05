@@ -2,11 +2,14 @@
 import json
 import os
 from dataclasses import asdict, dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import cv2
 import mediapipe as mp
+import numpy as np
 from mediapipe.framework.formats import landmark_pb2
+
+JOINT_COUNT = 33
 
 
 @dataclass
@@ -26,11 +29,21 @@ class FrameData:
     landmarks: Dict[int, Landmark]
 
 
-def extract_poses_from_video(video_path: str) -> List[FrameData]:
+def extract_poses_from_video(
+    video_path: str,
+    visibility_threshold: float = 0.5,
+) -> List[FrameData]:
     """Extract 33-joint pose landmarks from every frame of a video.
+
+    Landmarks whose visibility score is below *visibility_threshold* are
+    dropped from the frame's landmark dict so downstream code never sees
+    low-confidence joints.  Call interpolate_missing_landmarks() afterward
+    to fill those gaps.
 
     Args:
         video_path: Absolute or relative path to the input video file.
+        visibility_threshold: Minimum visibility score to keep a landmark.
+            Landmarks below this value are treated as undetected.
 
     Returns:
         List of FrameData, one per frame. Frames where MediaPipe fails to
@@ -70,6 +83,7 @@ def extract_poses_from_video(video_path: str) -> List[FrameData]:
                         visibility=lm.visibility,
                     )
                     for idx, lm in enumerate(results.pose_landmarks.landmark)
+                    if lm.visibility >= visibility_threshold
                 }
             else:
                 landmarks = {}
@@ -90,6 +104,94 @@ def extract_poses_from_video(video_path: str) -> List[FrameData]:
         f"({detected / len(frames) * 100:.1f}%)"
     )
     return frames
+
+
+def interpolate_missing_landmarks(frames: List[FrameData]) -> List[FrameData]:
+    """Fill gaps where a joint drops below the visibility threshold.
+
+    For each of the 33 joints, finds runs of frames where the joint is absent
+    and linearly interpolates x/y/z from the nearest valid frames on either
+    side.  Edge gaps (no valid frame before or after) are left empty.
+    Interpolated landmarks are assigned visibility=0.0 to flag their origin.
+
+    Args:
+        frames: Output of extract_poses_from_video.  Modified in-place.
+
+    Returns:
+        The same list with gaps filled.
+    """
+    n = len(frames)
+
+    for joint_idx in range(JOINT_COUNT):
+        # Collect (frame_index, Landmark) for frames that have this joint
+        valid: List[tuple[int, Landmark]] = [
+            (i, frames[i].landmarks[joint_idx])
+            for i in range(n)
+            if joint_idx in frames[i].landmarks
+        ]
+
+        if len(valid) < 2:
+            continue
+
+        valid_indices = [v[0] for v in valid]
+
+        for gap_start in range(n):
+            if joint_idx in frames[gap_start].landmarks:
+                continue
+
+            # Find nearest valid frames before and after this gap frame
+            before: Optional[tuple[int, Landmark]] = None
+            after: Optional[tuple[int, Landmark]] = None
+
+            for vi, lm in reversed(valid):
+                if vi < gap_start:
+                    before = (vi, lm)
+                    break
+            for vi, lm in valid:
+                if vi > gap_start:
+                    after = (vi, lm)
+                    break
+
+            if before is None or after is None:
+                continue
+
+            bi, blm = before
+            ai, alm = after
+            t = (gap_start - bi) / (ai - bi)
+
+            frames[gap_start].landmarks[joint_idx] = Landmark(
+                x=blm.x + t * (alm.x - blm.x),
+                y=blm.y + t * (alm.y - blm.y),
+                z=blm.z + t * (alm.z - blm.z),
+                visibility=0.0,
+            )
+
+    filled = sum(
+        1
+        for f in frames
+        for lm in f.landmarks.values()
+        if lm.visibility == 0.0
+    )
+    print(f"Interpolation complete: {filled} landmark-frames filled.")
+    return frames
+
+
+def compute_visibility_stats(frames: List[FrameData]) -> Dict[int, List[float]]:
+    """Collect per-joint visibility scores across all frames.
+
+    Args:
+        frames: Output of extract_poses_from_video (before or after interpolation).
+
+    Returns:
+        Dict mapping joint index to a list of visibility scores (one per frame
+        where that joint was detected by MediaPipe, i.e. visibility > 0).
+    """
+    stats: Dict[int, List[float]] = {i: [] for i in range(JOINT_COUNT)}
+    for f in frames:
+        for idx, lm in f.landmarks.items():
+            if lm.visibility > 0.0:
+                stats[idx].append(lm.visibility)
+    return stats
 
 
 def save_poses_to_json(frames: List[FrameData], output_path: str) -> None:
@@ -150,7 +252,7 @@ def visualize_pose_overlay(
 
             if frame_data.landmarks:
                 lm_proto = landmark_pb2.NormalizedLandmarkList()
-                for idx in range(33):
+                for idx in range(JOINT_COUNT):
                     lm = frame_data.landmarks.get(idx)
                     if lm:
                         entry = lm_proto.landmark.add()
@@ -197,8 +299,11 @@ if __name__ == "__main__":
     json_out = str(project_root / "itf_analysis" / "sample_videos" / "chon_ji_master_poses.json")
     overlay_out = str(project_root / "itf_analysis" / "sample_videos" / "chon_ji_master_overlay.mp4")
 
-    print("=== pose extraction ===")
-    frames = extract_poses_from_video(video)
+    print("=== pose extraction (visibility_threshold=0.5) ===")
+    frames = extract_poses_from_video(video, visibility_threshold=0.5)
+
+    print("\n=== interpolate missing landmarks ===")
+    frames = interpolate_missing_landmarks(frames)
 
     print("\n=== save JSON ===")
     save_poses_to_json(frames, json_out)
