@@ -32,10 +32,10 @@ Each layer's output is the next layer's input. Layers must be independently test
 | 1 Pose extraction | ✅ Complete | — |
 | 2 Normalization | ✅ Complete | — |
 | 3 Segmentation | ✅ Complete | 18/19 high on master-on-master ✓ |
-| 4 Alignment | ⚙️ Partial (gap alignment done, DTW pending) | — |
+| 4 Alignment | ✅ Complete | 19/19 movements aligned; overall mean RMS 25.6° on test student ✓ |
 | 5 Feedback | ❌ Not started | — |
 
-**Next immediate step**: Layer 4 DTW temporal alignment.
+**Next immediate step**: Layer 5 — per-movement angle difference → natural-language feedback via LLM.
 
 ## MediaPipe Pose Landmarks (frequently used)
 - 11 / 12: left / right shoulder
@@ -63,7 +63,8 @@ itf_analysis/
 │   ├── segmentor.py              # [LEGACY — do not use]
 │   └── keypose_marker.py         # [LEGACY — do not use]
 ├── alignment/
-│   └── gap_aligner.py            # align_with_gaps(), validate_alignment()
+│   ├── gap_aligner.py            # align_with_gaps(), validate_alignment()
+│   └── dtw_aligner.py            # build_movement_segments(), align_movement(), align_all_movements()
 ├── feedback/                     # Layer 5 — not yet implemented
 │   └── llm_client.py             # LLMClient ABC + GeminiClient / ClaudeClient / DeepSeekClient
 ├── master_data/
@@ -82,6 +83,8 @@ itf_analysis/
 │   ├── 03a_keypose_matching.ipynb
 │   ├── 03b_velocity_valleys.ipynb
 │   └── 03c_full_segmentation.ipynb
+│   ├── 04_student_segmentation.ipynb  # student video workflow (config at top)
+│   └── 05_dtw_alignment.ipynb         # Layer 4 DTW alignment + heatmap
 └── sample_videos/                # local-only, gitignored
 ```
 
@@ -173,7 +176,20 @@ Returns a `ValidationResult` with a Korean message for the student.
 
 Skipped rule fires before extra rule when both are triggered.
 
-**DTW temporal alignment is not yet implemented.**
+### `build_movement_segments()` — `alignment/dtw_aligner.py`
+Splits the full frame-angle sequence into per-movement sub-sequences using boundary frames.
+Movement N = frames from (boundary[N-1].frame + 1) to boundary[N].frame inclusive.
+
+### `align_movement()` — `alignment/dtw_aligner.py`
+Runs fastdtw on one master–student movement pair.
+- Angle dicts are converted to fixed-order numpy arrays (sorted key union of both segments)
+- Missing keys are forward-filled via linear interpolation; empty columns set to 0
+- Distance function: RMS across common keys; circular arithmetic for `shoulder_line_angle` / `hip_line_angle`
+- Returns `MovementAlignment` with `frame_pairs` (actual frame indices + per-angle diffs) and summary stats
+
+### `align_all_movements()` — `alignment/dtw_aligner.py`
+Calls `align_movement` for each movement present in both segment dicts.
+Skipped movements (absent from student) are simply not included in the result.
 
 ## Code Style
 - Small functions, single responsibility
