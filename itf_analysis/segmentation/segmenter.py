@@ -190,16 +190,13 @@ def segment_movements(
         for kp in master_keyposes
         if "source_frame" in kp
     }
-    if len(kp_source) == num_movements:
-        expected = [kp_source[i + 1] for i in range(num_movements)]
-    else:
-        # Rolling fallback: each expected position is avg_mov after the previous.
-        # More adaptive than fixed linear spacing when source_frames unavailable.
-        expected = []
-        rolling = frame_indices[0]
-        for _ in range(num_movements):
-            rolling = round(rolling + avg_mov)
-            expected.append(rolling)
+    use_source_frames = len(kp_source) == num_movements
+    source_expected: List[int] = (
+        [kp_source[i + 1] for i in range(num_movements)] if use_source_frames else []
+    )
+    # When source_frames are unavailable, exp is computed adaptively inside the
+    # loop: each expected = prev_detected_frame + avg_mov. This prevents window
+    # drift when the student's movement timing deviates from linear spacing.
 
     # Build keypose lookup: movement_index → angle dict
     kp_map: Dict[int, Dict[str, float]] = {
@@ -219,7 +216,7 @@ def segment_movements(
 
     for i in range(num_movements):
         mov = i + 1
-        exp = expected[i]
+        exp = source_expected[i] if use_source_frames else round(prev_frame + avg_mov)
 
         lo = max(frame_indices[0], prev_frame + 1, exp - half_window)
         hi = min(effective_end, exp + half_window)
