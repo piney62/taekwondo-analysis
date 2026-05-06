@@ -58,23 +58,38 @@ def _find_best_valley_in_window(
     smoothed: np.ndarray,
     lo: int,
     hi: int,
+    angles_lookup: Optional[Dict[int, Dict[str, float]]] = None,
+    kp_angles: Optional[Dict[str, float]] = None,
+    keypose_threshold: float = 25.0,
 ) -> Optional[int]:
-    """Return the actual frame number of the deepest valley in [lo, hi].
+    """Return the frame of the best valley in [lo, hi].
 
-    Args:
-        valleys: Positions in the velocity array (from find_velocity_valleys).
-        frame_indices: Actual frame numbers aligned with the velocity array.
-        smoothed: Smoothed velocity array.
-        lo: Window lower bound (inclusive, actual frame number).
-        hi: Window upper bound (inclusive, actual frame number).
+    When angles_lookup and kp_angles are provided, selects the valley that
+    minimises a combined score of normalised velocity depth and normalised
+    keypose distance (equal weight). This improves accuracy for movements
+    where velocity does not drop cleanly to zero.
 
-    Returns:
-        Actual frame number of the deepest valley, or None if no valley found.
+    Falls back to deepest-valley selection when keypose data is absent.
     """
     in_window = [v for v in valleys if lo <= frame_indices[v] <= hi]
     if not in_window:
         return None
-    best = min(in_window, key=lambda v: smoothed[v])
+
+    if angles_lookup is not None and kp_angles:
+        v_max = max(smoothed[v] for v in in_window) or 1.0
+
+        def _score(v: int) -> float:
+            fa = angles_lookup.get(frame_indices[v])
+            norm_vel = smoothed[v] / v_max
+            if fa:
+                norm_kp = min(keypose_distance(fa, kp_angles) / keypose_threshold, 1.0)
+                return 0.5 * norm_vel + 0.5 * norm_kp
+            return norm_vel
+
+        best = min(in_window, key=_score)
+    else:
+        best = min(in_window, key=lambda v: smoothed[v])
+
     return frame_indices[best]
 
 
@@ -120,6 +135,7 @@ def segment_movements(
     keypose_threshold: float = 20.0,
     sigma_seconds: float = 0.1,
     min_gap_sec: float = 0.5,
+    end_frame: Optional[int] = None,
 ) -> List[MovementBoundary]:
     """Segment an angle sequence into num_movements movement completions.
 
@@ -148,6 +164,9 @@ def segment_movements(
             match to count as a valid signal.
         sigma_seconds: Gaussian sigma for velocity smoothing.
         min_gap_sec: Minimum gap between velocity valleys in seconds.
+        end_frame: Last frame of actual poomsae content. If provided, excludes
+            post-poomsae tail (e.g., return-to-ready stance) from timing
+            calculations. Defaults to the last frame in all_frame_angles.
 
     Returns:
         List of num_movements MovementBoundary objects in movement order.
@@ -157,20 +176,38 @@ def segment_movements(
         return []
 
     frame_indices = [fi for fi, _ in all_frame_angles]
-    total_range = frame_indices[-1] - frame_indices[0]
+    effective_end = (
+        min(end_frame, frame_indices[-1]) if end_frame is not None else frame_indices[-1]
+    )
+    total_range = effective_end - frame_indices[0]
     avg_mov = total_range / num_movements
     half_window = max(1, int(avg_mov * window_ratio))
 
-    # Evenly-spaced expected completion frames
-    expected = [
-        frame_indices[0] + round((i + 1) / num_movements * total_range)
-        for i in range(num_movements)
-    ]
+    # Use stored source_frames as expected positions when available — far more
+    # accurate than linear spacing because real movements are not evenly timed.
+    kp_source: Dict[int, int] = {
+        kp["movement_index"]: kp["source_frame"]
+        for kp in master_keyposes
+        if "source_frame" in kp
+    }
+    if len(kp_source) == num_movements:
+        expected = [kp_source[i + 1] for i in range(num_movements)]
+    else:
+        # Rolling fallback: each expected position is avg_mov after the previous.
+        # More adaptive than fixed linear spacing when source_frames unavailable.
+        expected = []
+        rolling = frame_indices[0]
+        for _ in range(num_movements):
+            rolling = round(rolling + avg_mov)
+            expected.append(rolling)
 
     # Build keypose lookup: movement_index → angle dict
     kp_map: Dict[int, Dict[str, float]] = {
         kp["movement_index"]: kp.get("angles", {}) for kp in master_keyposes
     }
+
+    # Frame → angles lookup used for combined valley scoring
+    angles_lookup: Dict[int, Dict[str, float]] = {fi: fa for fi, fa in all_frame_angles}
 
     # Velocity pipeline
     velocity = compute_motion_velocity(all_frame_angles, fps)
@@ -185,18 +222,23 @@ def segment_movements(
         exp = expected[i]
 
         lo = max(frame_indices[0], prev_frame + 1, exp - half_window)
-        hi = min(frame_indices[-1], exp + half_window)
-        # Last movement: search the entire tail so we never clip a late valley
-        if hi >= frame_indices[-1]:
+        hi = min(effective_end, exp + half_window)
+        # Last movement: search entire tail so we never clip a late valley
+        if hi >= effective_end:
             lo = max(frame_indices[0], prev_frame + 1)
         if lo > hi:
             lo = hi = exp
 
-        # --- velocity signal ---
-        v_frame = _find_best_valley_in_window(valleys, frame_indices, smoothed, lo, hi)
-
         # --- keypose signal ---
         kp_angles = kp_map.get(mov)
+
+        # --- velocity signal (combined scoring when keypose angles available) ---
+        v_frame = _find_best_valley_in_window(
+            valleys, frame_indices, smoothed, lo, hi,
+            angles_lookup=angles_lookup,
+            kp_angles=kp_angles,
+            keypose_threshold=keypose_threshold,
+        )
         kp_frame: Optional[int] = None
         kp_found = False
         if kp_angles:

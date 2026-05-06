@@ -31,12 +31,11 @@ Each layer's output is the next layer's input. Layers must be independently test
 |-------|--------|------|
 | 1 Pose extraction | ✅ Complete | — |
 | 2 Normalization | ✅ Complete | — |
-| 3 Segmentation | ✅ Complete | master-on-master high ≥ 15/19 (pending keyposes_angles.json) |
+| 3 Segmentation | ✅ Complete | 18/19 high on master-on-master ✓ |
 | 4 Alignment | ⚙️ Partial (gap alignment done, DTW pending) | — |
 | 5 Feedback | ❌ Not started | — |
 
-**Next immediate step**: Run `03_keypose_marking.ipynb` to populate `keyposes_angles.json`,
-then re-run `03c_full_segmentation.ipynb` and confirm high ≥ 15/19 on master-on-master.
+**Next immediate step**: Layer 4 DTW temporal alignment.
 
 ## MediaPipe Pose Landmarks (frequently used)
 - 11 / 12: left / right shoulder
@@ -100,12 +99,27 @@ RMS Euclidean distance across all common angle keys between a frame and a stored
 Default threshold: 25°.
 
 ### Master segmentation — `segment_movements()`
-For each of 19 movements, a search window is centered on the linearly-expected completion frame
-(`half_window ≈ avg_movement_frames × 0.45`). Within each window:
-- **Velocity signal**: deepest `argrelmin` valley in smoothed angular velocity
-- **Keypose signal**: frame with minimum RMS distance to stored keypose angles
 
-Confidence rules:
+**Expected frame calculation (priority order):**
+1. `source_frames` from `keyposes_angles.json` — used when all 19 are present (most accurate)
+2. Rolling fallback — when json is absent: `expected[i] = expected[i-1] + avg_mov`, where
+   `avg_mov = total_range / num_movements`. More adaptive than fixed linear spacing.
+
+`half_window ≈ avg_movement_frames × 0.45`. `end_frame` parameter clips the search upper
+bound to exclude post-poomsae content (e.g., return-to-ready stance).
+
+**Valley selection — combined scoring:**
+Within each search window, valleys are scored as:
+```
+score = 0.5 × (velocity / max_velocity_in_window)
+      + 0.5 × min(keypose_distance / threshold, 1.0)
+```
+The valley with the lowest combined score is selected. Falls back to deepest-velocity
+selection when no keypose angles are available.
+
+**Keypose signal:** frame with minimum RMS angle distance to stored keypose angles.
+
+**Confidence rules:**
 - `"high"` — both signals found AND within `tolerance_frames=5` of each other
 - `"medium"` — exactly one signal found (or both found but disagreeing)
 - `"low"` — neither signal → fallback to expected frame + warning
@@ -122,11 +136,18 @@ This naturally handles skipped movements: no valley near that keypose → it sta
 
 ### Keypose marking workflow (one-time per poomsae)
 Run `notebooks/03_keypose_marking.ipynb`:
-1. Auto-detect 19 velocity candidate frames
-2. Watch `chon_ji_master_overlay.mp4`, adjust `KEYPOSE_FRAMES` dict
-3. Extract angles at each marked frame via `keypose_angle_marker.py`
-4. Validate (0 errors) → save `master_data/chon_ji/keyposes_angles.json`
-5. Re-run `segment_movements()` → confirm high ≥ 15/19
+1. **Auto-detect** candidate frames (cell 6):
+   - `END_FRAME` = last frame of poomsae content (before return-to-ready)
+   - Expected positions use **full video range** (including return-to-ready) for better spacing
+   - `END_FRAME` is the search **upper bound only** — return-to-ready frames excluded
+   - **Rolling expected**: each window centered at `last_detected + avg_mov`
+   - **Deepest valley** selected within each window
+2. **Verify** `KEYPOSE_FRAMES` dict (cell 8) — watch overlay video, override any wrong frames
+3. **Build** angle entries and save `keyposes_angles.json` (cells 12–16)
+4. **Re-run** `segment_movements()` → confirm high ≥ 15/19 (cell 18)
+
+**IMPORTANT**: `keyposes_angles.json` is untracked by default. Commit it immediately after
+a successful marking run (`git add` + `git commit`) to prevent data loss.
 
 ## Layer 4: Alignment
 
