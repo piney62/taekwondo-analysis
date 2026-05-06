@@ -253,6 +253,104 @@ def segment_movements(
 
 
 # ---------------------------------------------------------------------------
+# Student-video segmentation
+# ---------------------------------------------------------------------------
+
+def segment_student_video(
+    student_frame_angles: List[Tuple[int, Dict[str, float]]],
+    master_keyposes: List[Dict],
+    fps: float,
+    threshold: float = 25.0,
+    sigma_seconds: float = 0.1,
+    min_gap_sec: float = 0.5,
+) -> List[MovementBoundary]:
+    """Match student velocity valleys to master keyposes.
+
+    Detects velocity valleys in the student sequence, then greedily assigns
+    each valley to the closest unmatched master keypose (ordered: a valley
+    cannot match an earlier movement than the previously matched one).  Valleys
+    with no match below *threshold* are silently discarded.
+
+    Confidence labelling:
+        "high"   — RMS distance < threshold * 0.5
+        "medium" — RMS distance < threshold
+
+    Args:
+        student_frame_angles: List of (frame_index, angles_dict) ordered by
+            frame_index.  Produced by extract_joint_angles() on normalised frames.
+        master_keyposes: List of keypose dicts from load_master_keyposes().
+            Pass [] to get an empty result without raising.
+        fps: Frames per second of the student video.
+        threshold: Maximum RMS angle distance (degrees) for a valid keypose match.
+        sigma_seconds: Gaussian sigma for velocity smoothing.
+        min_gap_sec: Minimum gap between consecutive valley candidates.
+
+    Returns:
+        List of MovementBoundary sorted by frame number.  May have fewer than
+        19 entries if movements were skipped or no valley was close enough.
+    """
+    if len(student_frame_angles) < 2 or not master_keyposes:
+        return []
+
+    frame_indices = [fi for fi, _ in student_frame_angles]
+    angles_lookup: Dict[int, Dict[str, float]] = {
+        fi: fa for fi, fa in student_frame_angles
+    }
+
+    velocity = compute_motion_velocity(student_frame_angles, fps)
+    smoothed = smooth_velocity(velocity, fps, sigma_seconds=sigma_seconds)
+    valleys = find_velocity_valleys(smoothed, fps, min_gap_sec=min_gap_sec)
+
+    kp_list = sorted(master_keyposes, key=lambda k: k["movement_index"])
+    matched_indices: set = set()
+    next_kp_pos: int = 0  # ordering constraint index into kp_list
+
+    boundaries: List[MovementBoundary] = []
+
+    for v in valleys:
+        fi = frame_indices[v]
+        fa = angles_lookup.get(fi)
+        if fa is None:
+            continue
+
+        best_kp: Optional[Dict] = None
+        best_dist = float("inf")
+        best_pos = -1
+
+        for kp_pos in range(next_kp_pos, len(kp_list)):
+            kp = kp_list[kp_pos]
+            if kp["movement_index"] in matched_indices:
+                continue
+            kp_angles = kp.get("angles", {})
+            if not kp_angles:
+                continue
+            d = keypose_distance(fa, kp_angles)
+            if d < best_dist:
+                best_dist = d
+                best_kp = kp
+                best_pos = kp_pos
+
+        if best_kp is None or best_dist >= threshold:
+            continue
+
+        matched_indices.add(best_kp["movement_index"])
+        next_kp_pos = best_pos + 1
+
+        conf: Confidence = "high" if best_dist < threshold * 0.5 else "medium"
+        boundaries.append(
+            MovementBoundary(
+                movement_number=best_kp["movement_index"],
+                frame=fi,
+                timestamp_ms=fi / fps * 1000.0,
+                confidence=conf,
+                matched_signals=["velocity", "keypose"],
+            )
+        )
+
+    return sorted(boundaries, key=lambda b: b.frame)
+
+
+# ---------------------------------------------------------------------------
 # __main__: self-test on master video
 # ---------------------------------------------------------------------------
 
