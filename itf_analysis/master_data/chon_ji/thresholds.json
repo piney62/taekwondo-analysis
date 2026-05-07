@@ -1,1 +1,36 @@
-﻿{}
+{
+  "poomsae": "chon_ji",
+  "schema_version": "1.0",
+  "description": "Per-joint angle deviation thresholds in degrees. Movement-specific entries override the default for that joint in that movement only. All values require instructor tuning before production use.",
+  "defaults": {
+    "right_knee":           15,
+    "left_knee":            15,
+    "right_elbow":          20,
+    "left_elbow":           20,
+    "right_hip":            15,
+    "left_hip":             15,
+    "shoulder_line_angle":  25,
+    "hip_line_angle":       25
+  },
+  "movements": {
+    "1":  { "left_elbow":  15 },
+    "2":  { "right_elbow": 15 },
+    "3":  { "right_elbow": 15 },
+    "4":  { "left_elbow":  15 },
+    "5":  { "left_elbow":  15 },
+    "6":  { "right_elbow": 15 },
+    "7":  { "left_elbow":  15 },
+    "8":  { "right_elbow": 15 },
+    "9":  {},
+    "10": {},
+    "11": { "left_elbow":  15 },
+    "12": { "right_elbow": 15 },
+    "13": { "left_elbow":  15 },
+    "14": { "right_elbow": 15 },
+    "15": { "left_elbow":  15 },
+    "16": { "right_elbow": 15 },
+    "17": { "left_elbow":  15 },
+    "18": { "right_elbow": 15 },
+    "19": {}
+  }
+}
