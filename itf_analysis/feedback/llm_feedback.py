@@ -46,18 +46,19 @@ _DIRECTION_LABEL: Dict[str, Dict[str, str]] = {
     "hip_line_angle":      {"too_small": "not rotated enough",   "too_large": "over-rotated"},
 }
 
-_SYSTEM_PROMPT = """\
-You are an ITF Taekwondo instructor reviewing a student's Chon-Ji poomsae.
-You receive motion-analysis data for one movement and write concise corrective feedback.
-
-Rules:
-- Mention only what the student needs to fix, never what they did correctly.
-- Name the specific body part in plain English (e.g. "right elbow", "shoulder rotation").
-- Do not include any numeric angles or percentages in your response.
-- Keep feedback to 2-3 sentences.
-- Write directly to the student using "your" (e.g. "Your right elbow is ...").
-- Be specific enough that the student knows exactly what to adjust.
-"""
+def _build_system_prompt(poomsae_name: str) -> str:
+    return (
+        f"You are an ITF Taekwondo instructor reviewing a student's {poomsae_name}.\n"
+        "You receive motion-analysis data for one movement and write concise corrective feedback.\n"
+        "\n"
+        "Rules:\n"
+        '- Mention only what the student needs to fix, never what they did correctly.\n'
+        '- Name the specific body part in plain English (e.g. "right elbow", "shoulder rotation").\n'
+        "- Do not include any numeric angles or percentages in your response.\n"
+        "- Keep feedback to 2-3 sentences.\n"
+        '- Write directly to the student using "your" (e.g. "Your right elbow is ...").\n'
+        "- Be specific enough that the student knows exactly what to adjust.\n"
+    )
 
 # ---------------------------------------------------------------------------
 # Prompt builder
@@ -98,6 +99,7 @@ def generate_movement_feedback(
     client: LLMClient,
     movement_name: str = "",
     itf_name: str = "",
+    poomsae_name: str = "",
     max_tokens: int = 200,
 ) -> str:
     """Generate natural-language feedback for a single movement.
@@ -109,6 +111,8 @@ def generate_movement_feedback(
             Optional — used only to enrich the prompt context.
         itf_name: Official ITF technique name, e.g. "Ap Kubi Olgul Makgi (L)".
             Optional — used only to enrich the prompt context.
+        poomsae_name: Human-readable poomsae name, e.g. "Chon-Ji poomsae".
+            Used in the system prompt so the LLM has technique context.
         max_tokens: Maximum tokens in the generated response.
 
     Returns:
@@ -119,13 +123,15 @@ def generate_movement_feedback(
         return "No significant issues detected for this movement."
 
     user_prompt = _build_user_prompt(summary, movement_name, itf_name)
-    return client.generate(_SYSTEM_PROMPT, user_prompt, max_tokens=max_tokens)
+    system_prompt = _build_system_prompt(poomsae_name or "ITF poomsae")
+    return client.generate(system_prompt, user_prompt, max_tokens=max_tokens)
 
 
 def generate_full_feedback(
     summaries: Dict[int, MovementIssueSummary],
     client: LLMClient,
     keyposes: Optional[List[Dict]] = None,
+    poomsae_name: str = "",
     max_tokens: int = 200,
 ) -> Dict[int, str]:
     """Generate feedback for every movement in *summaries*.
@@ -153,6 +159,7 @@ def generate_full_feedback(
             client,
             movement_name=kp.get("movement_name", ""),
             itf_name=kp.get("itf_name", ""),
+            poomsae_name=poomsae_name,
             max_tokens=max_tokens,
         )
     return feedback

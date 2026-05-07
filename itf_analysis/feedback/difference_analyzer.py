@@ -30,14 +30,34 @@ _CIRCULAR_KEYS = frozenset({"shoulder_line_angle", "hip_line_angle"})
 # Threshold helpers
 # ---------------------------------------------------------------------------
 
+_DEFAULT_THRESHOLDS: Dict = {
+    "poomsae": "default",
+    "schema_version": "1.0",
+    "defaults": {
+        "right_knee":          15,
+        "left_knee":           15,
+        "right_elbow":         20,
+        "left_elbow":          20,
+        "right_hip":           15,
+        "left_hip":            15,
+        "shoulder_line_angle": 25,
+        "hip_line_angle":      25,
+    },
+    "movements": {},
+}
+
+
 def load_thresholds(path: str) -> Dict:
     """Load thresholds JSON from *path*.
 
     Returns the raw dict with 'defaults' and 'movements' keys.
-    Raises FileNotFoundError or json.JSONDecodeError on bad input.
+    Falls back to built-in defaults if the file does not exist.
     """
-    with open(path, encoding="utf-8") as f:
-        return json.load(f)
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {k: v for k, v in _DEFAULT_THRESHOLDS.items()}
 
 
 def _resolve_thresholds(thresholds: Dict, movement_number: int) -> Dict[str, float]:
