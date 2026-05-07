@@ -68,13 +68,21 @@ class FramePair:
     Attributes:
         master_frame: Actual frame index in the master video.
         student_frame: Actual frame index in the student video.
+        master_angles: Raw angle values for the master frame.
+        student_angles: Raw angle values for the student frame.
         angle_diffs: Per-angle absolute difference in degrees.
+        angle_delta: Signed difference (student − master) in degrees.
+            Positive = student has larger angle; negative = smaller.
+            Circular arithmetic applied to shoulder/hip line angles.
         rms_diff: RMS across all angle_diffs (0.0 when no common keys).
     """
 
     master_frame: int
     student_frame: int
+    master_angles: Dict[str, float] = field(default_factory=dict)
+    student_angles: Dict[str, float] = field(default_factory=dict)
     angle_diffs: Dict[str, float] = field(default_factory=dict)
+    angle_delta: Dict[str, float] = field(default_factory=dict)
     rms_diff: float = 0.0
 
 
@@ -225,16 +233,23 @@ def align_movement(
         ma, sa = m_angle_dicts[mi], s_angle_dicts[si]
         common = set(ma) & set(sa)
         diffs: Dict[str, float] = {}
+        deltas: Dict[str, float] = {}
         for k in common:
-            diffs[k] = (
-                _circular_diff(ma[k], sa[k]) if k in _CIRCULAR_KEYS else abs(ma[k] - sa[k])
-            )
+            if k in _CIRCULAR_KEYS:
+                delta = (sa[k] - ma[k] + 180.0) % 360.0 - 180.0
+            else:
+                delta = sa[k] - ma[k]
+            diffs[k] = abs(delta)
+            deltas[k] = delta
         rms = math.sqrt(sum(d * d for d in diffs.values()) / len(diffs)) if diffs else 0.0
         frame_pairs.append(
             FramePair(
                 master_frame=m_frames[mi],
                 student_frame=s_frames[si],
+                master_angles={k: ma[k] for k in common},
+                student_angles={k: sa[k] for k in common},
                 angle_diffs=diffs,
+                angle_delta=deltas,
                 rms_diff=rms,
             )
         )
