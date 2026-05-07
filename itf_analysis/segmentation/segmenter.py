@@ -136,6 +136,7 @@ def segment_movements(
     sigma_seconds: float = 0.1,
     min_gap_sec: float = 0.5,
     end_frame: Optional[int] = None,
+    start_frame: Optional[int] = None,
 ) -> List[MovementBoundary]:
     """Segment an angle sequence into num_movements movement completions.
 
@@ -167,6 +168,10 @@ def segment_movements(
         end_frame: Last frame of actual poomsae content. If provided, excludes
             post-poomsae tail (e.g., return-to-ready stance) from timing
             calculations. Defaults to the last frame in all_frame_angles.
+        start_frame: First frame of actual poomsae content. If provided,
+            excludes pre-poomsae lead-in (e.g., ready stance) from timing
+            calculations. Symmetric counterpart of end_frame. Defaults to the
+            first frame in all_frame_angles.
 
     Returns:
         List of num_movements MovementBoundary objects in movement order.
@@ -179,7 +184,10 @@ def segment_movements(
     effective_end = (
         min(end_frame, frame_indices[-1]) if end_frame is not None else frame_indices[-1]
     )
-    total_range = effective_end - frame_indices[0]
+    effective_start = (
+        max(start_frame, frame_indices[0]) if start_frame is not None else frame_indices[0]
+    )
+    total_range = effective_end - effective_start
     avg_mov = total_range / num_movements
     half_window = max(1, int(avg_mov * window_ratio))
 
@@ -212,7 +220,7 @@ def segment_movements(
     valleys = find_velocity_valleys(smoothed, fps, min_gap_sec=min_gap_sec)
 
     boundaries: List[MovementBoundary] = []
-    prev_frame = frame_indices[0] - 1
+    prev_frame = effective_start - 1
 
     for i in range(num_movements):
         mov = i + 1

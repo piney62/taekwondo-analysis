@@ -108,8 +108,10 @@ Default threshold: 25°.
 2. Rolling fallback — when json is absent: `expected[i] = expected[i-1] + avg_mov`, where
    `avg_mov = total_range / num_movements`. More adaptive than fixed linear spacing.
 
-`half_window ≈ avg_movement_frames × 0.45`. `end_frame` parameter clips the search upper
-bound to exclude post-poomsae content (e.g., return-to-ready stance).
+`half_window ≈ avg_movement_frames × 0.45`. `end_frame` clips the search upper bound to
+exclude post-poomsae content (e.g., return-to-ready stance). `start_frame` is the symmetric
+counterpart — clips the lower bound to exclude pre-poomsae lead-in (e.g., ready stance).
+Both affect `total_range`, `avg_mov`, and `prev_frame` initialization.
 
 **Valley selection — combined scoring:**
 Within each search window, valleys are scored as:
@@ -140,9 +142,9 @@ This naturally handles skipped movements: no valley near that keypose → it sta
 ### Keypose marking workflow (one-time per poomsae)
 Run `notebooks/03_keypose_marking.ipynb`:
 1. **Auto-detect** candidate frames (cell 6):
+   - `START_FRAME` = first frame of actual poomsae (after ready stance)
    - `END_FRAME` = last frame of poomsae content (before return-to-ready)
-   - Expected positions use **full video range** (including return-to-ready) for better spacing
-   - `END_FRAME` is the search **upper bound only** — return-to-ready frames excluded
+   - Both clip `total_range` so `avg_mov` is based only on the real poomsae duration
    - **Rolling expected**: each window centered at `last_detected + avg_mov`
    - **Deepest valley** selected within each window
 2. **Verify** `KEYPOSE_FRAMES` dict (cell 8) — watch overlay video, override any wrong frames
