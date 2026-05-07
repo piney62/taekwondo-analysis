@@ -64,12 +64,12 @@ class TestValidateAlignment:
         assert sorted(result.skipped_movements) == [2, 8, 15]
 
     def test_4_skipped_invalid(self):
-        """4 skipped > 3 → valid=False with Korean message."""
+        """4 skipped > 3 → valid=False with English message."""
         pairs = _pairs_with_skipped({1, 5, 10, 15})
         result = validate_alignment(pairs)
         assert result.valid is False
-        assert "4개 동작" in result.message
-        assert "감지되지 않았습니다" in result.message
+        assert "4 movements" in result.message
+        assert "not detected" in result.message
         assert sorted(result.skipped_movements) == [1, 5, 10, 15]
 
     def test_2_extra_still_valid(self):
@@ -80,11 +80,11 @@ class TestValidateAlignment:
         assert result.extra_count == 2
 
     def test_3_extra_invalid(self):
-        """3 extras > 2 → valid=False with Korean message."""
+        """3 extras > 2 → valid=False with English message."""
         pairs = _pairs_with_skipped(skipped=set(), extra=3)
         result = validate_alignment(pairs)
         assert result.valid is False
-        assert "중복 감지" in result.message
+        assert "Duplicate movements" in result.message
         assert result.extra_count == 3
 
     def test_skipped_takes_priority_over_extra(self):
@@ -92,15 +92,15 @@ class TestValidateAlignment:
         pairs = _pairs_with_skipped({1, 2, 3, 4}, extra=3)
         result = validate_alignment(pairs)
         assert result.valid is False
-        assert "감지되지 않았습니다" in result.message
+        assert "not detected" in result.message
 
     def test_6_low_confidence_soft_warning(self):
         """6 low-confidence (>5) → valid=True with soft warning message."""
         pairs = _pairs_with_low_conf(6)
         result = validate_alignment(pairs)
         assert result.valid is True
-        assert "6개 동작" in result.message
-        assert "불명확합니다" in result.message
+        assert "6 movements" in result.message
+        assert "unclear" in result.message
 
     def test_5_low_confidence_no_warning(self):
         """Exactly 5 low-confidence (≤5) → no warning message."""

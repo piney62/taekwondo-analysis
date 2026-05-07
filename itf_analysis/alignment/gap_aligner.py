@@ -114,19 +114,19 @@ class ValidationResult:
 
     Attributes:
         valid: False if the alignment is too poor for reliable feedback.
-        message: Korean message shown to the user (empty string when clean).
+        message: English message shown to the user (empty string when clean).
         skipped_movements: Movement numbers that were not detected.
         extra_count: Number of extra (unmatched) student boundaries.
     """
 
     valid: bool
-    message: str
+    message: str  # English message shown to the user (empty string when clean).
     skipped_movements: List[int]
     extra_count: int
 
 
 def validate_alignment(alignment: List[AlignmentPair]) -> ValidationResult:
-    """Validate an alignment and produce a user-facing Korean message.
+    """Validate an alignment and produce a user-facing English message.
 
     Rules (checked in priority order):
     1. skipped > 3  → valid=False, hard failure
@@ -138,7 +138,7 @@ def validate_alignment(alignment: List[AlignmentPair]) -> ValidationResult:
         alignment: Output of align_with_gaps().
 
     Returns:
-        ValidationResult with a Korean message for the student.
+        ValidationResult with an English message for the student.
     """
     skipped = [
         p.master_movement
@@ -156,8 +156,8 @@ def validate_alignment(alignment: List[AlignmentPair]) -> ValidationResult:
         return ValidationResult(
             valid=False,
             message=(
-                f"{len(skipped)}개 동작이 감지되지 않았습니다. "
-                "동작을 더 크고 명확하게 해주세요."
+                f"{len(skipped)} movements were not detected. "
+                "Please make your movements larger and clearer."
             ),
             skipped_movements=sorted(skipped),
             extra_count=extra_count,
@@ -166,7 +166,7 @@ def validate_alignment(alignment: List[AlignmentPair]) -> ValidationResult:
     if extra_count > 2:
         return ValidationResult(
             valid=False,
-            message="동작이 중복 감지됐습니다. 각 동작을 한 번씩만 수행해주세요.",
+            message="Duplicate movements detected. Please perform each movement exactly once.",
             skipped_movements=sorted(skipped),
             extra_count=extra_count,
         )
@@ -175,8 +175,8 @@ def validate_alignment(alignment: List[AlignmentPair]) -> ValidationResult:
         return ValidationResult(
             valid=True,
             message=(
-                f"{low_conf}개 동작이 불명확합니다. "
-                "결과가 정확하지 않을 수 있습니다."
+                f"{low_conf} movements are unclear. "
+                "Results may not be accurate."
             ),
             skipped_movements=sorted(skipped),
             extra_count=extra_count,

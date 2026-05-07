@@ -165,13 +165,13 @@ class AlignmentPair:
 ```
 
 ### `validate_alignment()` — `alignment/gap_aligner.py`
-Returns a `ValidationResult` with a Korean message for the student.
+Returns a `ValidationResult` with an English message for the student.
 
 | Condition | valid | Message |
 |-----------|-------|---------|
-| skipped > 3 | False | "N개 동작이 감지되지 않았습니다. 동작을 더 크고 명확하게 해주세요." |
-| extra > 2 | False | "동작이 중복 감지됐습니다. 각 동작을 한 번씩만 수행해주세요." |
-| low conf > 5 | True | "N개 동작이 불명확합니다. 결과가 정확하지 않을 수 있습니다." |
+| skipped > 3 | False | "N movements were not detected. Please make your movements larger and clearer." |
+| extra > 2 | False | "Duplicate movements detected. Please perform each movement exactly once." |
+| low conf > 5 | True | "N movements are unclear. Results may not be accurate." |
 | otherwise | True | "" |
 
 Skipped rule fires before extra rule when both are triggered.

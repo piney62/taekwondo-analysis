@@ -1,0 +1,389 @@
+{
+  "poomsae": "do_san",
+  "keyposes": [
+    {
+      "movement_index": 1,
+      "movement_name": "left_walking_high_block",
+      "itf_name": "Ap Kubi Olgul Makgi (L)",
+      "source_frame": 54,
+      "angles": {
+        "right_knee": 147.30808634400407,
+        "left_knee": 159.09871774465213,
+        "right_elbow": 119.57214970942455,
+        "left_elbow": 99.60254737599507,
+        "right_hip": 152.71075656653224,
+        "left_hip": 148.9690715189032,
+        "shoulder_line_angle": -170.99528008530194,
+        "hip_line_angle": 175.02194129682283
+      }
+    },
+    {
+      "movement_index": 2,
+      "movement_name": "right_walking_middle_punch",
+      "itf_name": "Ap Kubi Kaunde Jirugi (R)",
+      "source_frame": 100,
+      "angles": {
+        "right_knee": 160.27495053573784,
+        "left_knee": 161.08575154919643,
+        "right_elbow": 110.8637942422238,
+        "left_elbow": 130.9150032133847,
+        "right_hip": 166.05866638279772,
+        "left_hip": 133.97857040748383,
+        "shoulder_line_angle": -12.766797731644054,
+        "hip_line_angle": 7.123704256063146
+      }
+    },
+    {
+      "movement_index": 3,
+      "movement_name": "right_walking_high_block",
+      "itf_name": "Ap Kubi Olgul Makgi (R)",
+      "source_frame": 169,
+      "angles": {
+        "right_knee": 148.05692954610245,
+        "left_knee": 141.1527019544842,
+        "right_elbow": 89.01826913078861,
+        "left_elbow": 150.4125725570008,
+        "right_hip": 155.81421167489032,
+        "left_hip": 144.01669144477128,
+        "shoulder_line_angle": 178.97144036107738,
+        "hip_line_angle": -166.88922849195038
+      }
+    },
+    {
+      "movement_index": 4,
+      "movement_name": "left_walking_middle_punch",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L)",
+      "source_frame": 216,
+      "angles": {
+        "right_knee": 172.63772279792494,
+        "left_knee": 176.4089955428913,
+        "right_elbow": 147.78695798340792,
+        "left_elbow": 141.3934362998268,
+        "right_hip": 158.5640426317706,
+        "left_hip": 162.27840257026486,
+        "shoulder_line_angle": 4.466003778824123,
+        "hip_line_angle": -10.563434740694085
+      }
+    },
+    {
+      "movement_index": 5,
+      "movement_name": "left_l_stance_inner_forearm_block",
+      "itf_name": "Niunja Sogi An Palmok Makgi (L)",
+      "source_frame": 269,
+      "angles": {
+        "right_knee": 107.67124709959873,
+        "left_knee": 137.00487215581478,
+        "right_elbow": 122.07011868451347,
+        "left_elbow": 129.2387499369441,
+        "right_hip": 163.81271483360055,
+        "left_hip": 149.60596156001873,
+        "shoulder_line_angle": 168.75588862446256,
+        "hip_line_angle": 173.5096941530396
+      }
+    },
+    {
+      "movement_index": 6,
+      "movement_name": "right_walking_middle_punch_2",
+      "itf_name": "Ap Kubi Kaunde Jirugi (R)",
+      "source_frame": 320,
+      "angles": {
+        "right_knee": 123.58058581741125,
+        "left_knee": 158.79039838978684,
+        "right_elbow": 154.94064662717705,
+        "left_elbow": 153.2505374792918,
+        "right_hip": 107.72044447613482,
+        "left_hip": 155.51336095898296,
+        "shoulder_line_angle": -178.82306322523954,
+        "hip_line_angle": -173.24874154528806
+      }
+    },
+    {
+      "movement_index": 7,
+      "movement_name": "right_l_stance_inner_forearm_block",
+      "itf_name": "Niunja Sogi An Palmok Makgi (R)",
+      "source_frame": 370,
+      "angles": {
+        "right_knee": 165.03020108912017,
+        "left_knee": 158.70072672759414,
+        "right_elbow": 88.16294434109321,
+        "left_elbow": 83.94733438455582,
+        "right_hip": 139.23528093289363,
+        "left_hip": 156.81670932928606,
+        "shoulder_line_angle": 4.729371029678135,
+        "hip_line_angle": -1.7882522870569402
+      }
+    },
+    {
+      "movement_index": 8,
+      "movement_name": "left_walking_middle_punch_2",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L)",
+      "source_frame": 398,
+      "angles": {
+        "right_knee": 163.77529724756428,
+        "left_knee": 136.18361258768766,
+        "right_elbow": 115.21439112636811,
+        "left_elbow": 135.5232218423732,
+        "right_hip": 131.01758891345088,
+        "left_hip": 124.65802917180476,
+        "shoulder_line_angle": 179.06792208080984,
+        "hip_line_angle": 179.99468319134894
+      }
+    },
+    {
+      "movement_index": 9,
+      "movement_name": "left_walking_low_block",
+      "itf_name": "Ap Kubi Najunde Makgi (L)",
+      "source_frame": 450,
+      "angles": {
+        "right_knee": 116.04926578350293,
+        "left_knee": 164.64358489824713,
+        "right_elbow": 146.49569720585782,
+        "left_elbow": 146.52555710589436,
+        "right_hip": 121.04375262194944,
+        "left_hip": 148.7386122973295,
+        "shoulder_line_angle": -171.7555473805494,
+        "hip_line_angle": 179.02618094403906
+      }
+    },
+    {
+      "movement_index": 10,
+      "movement_name": "right_walking_middle_punch_3",
+      "itf_name": "Ap Kubi Kaunde Jirugi (R)",
+      "source_frame": 508,
+      "angles": {
+        "right_knee": 169.23449742174174,
+        "left_knee": 160.12441950720728,
+        "right_elbow": 39.91577714603165,
+        "left_elbow": 108.1345953856106,
+        "right_hip": 136.6347475798798,
+        "left_hip": 154.09117663989386,
+        "shoulder_line_angle": 7.852709631878043,
+        "hip_line_angle": -8.687229426795612
+      }
+    },
+    {
+      "movement_index": 11,
+      "movement_name": "right_walking_low_block",
+      "itf_name": "Ap Kubi Najunde Makgi (R)",
+      "source_frame": 558,
+      "angles": {
+        "right_knee": 169.99082323476773,
+        "left_knee": 141.73448447807678,
+        "right_elbow": 92.25233528201002,
+        "left_elbow": 143.94092141220932,
+        "right_hip": 130.54444108936488,
+        "left_hip": 129.9779402655056,
+        "shoulder_line_angle": 172.4624956053899,
+        "hip_line_angle": -147.30113872802508
+      }
+    },
+    {
+      "movement_index": 12,
+      "movement_name": "left_walking_middle_punch_3",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L)",
+      "source_frame": 620,
+      "angles": {
+        "right_knee": 161.29748246176464,
+        "left_knee": 171.56934412694156,
+        "right_elbow": 110.42190404019196,
+        "left_elbow": 65.51119529964899,
+        "right_hip": 154.75741052533846,
+        "left_hip": 132.49161183734614,
+        "shoulder_line_angle": -13.528050915193022,
+        "hip_line_angle": 10.528247450743809
+      }
+    },
+    {
+      "movement_index": 13,
+      "movement_name": "left_walking_middle_punch_4",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L) x2",
+      "source_frame": 670,
+      "angles": {
+        "right_knee": 168.40985272695977,
+        "left_knee": 172.43264439460407,
+        "right_elbow": 131.73227741721877,
+        "left_elbow": 85.90211252738078,
+        "right_hip": 156.1037674261266,
+        "left_hip": 139.86455344374775,
+        "shoulder_line_angle": -176.42981621176293,
+        "hip_line_angle": 147.2228262753545
+      }
+    },
+    {
+      "movement_index": 14,
+      "movement_name": "right_walking_middle_punch_4",
+      "itf_name": "Ap Kubi Kaunde Jirugi (R)",
+      "source_frame": 724,
+      "angles": {
+        "right_knee": 154.26693692022602,
+        "left_knee": 161.8752938609085,
+        "right_elbow": 111.31237653236516,
+        "left_elbow": 144.66466817338,
+        "right_hip": 167.68715018952497,
+        "left_hip": 134.45351425644907,
+        "shoulder_line_angle": -7.931667531747583,
+        "hip_line_angle": 2.3041742437164534
+      }
+    },
+    {
+      "movement_index": 15,
+      "movement_name": "left_l_stance_knifehand_block",
+      "itf_name": "Niunja Sogi Sonkal Makgi (L)",
+      "source_frame": 757,
+      "angles": {
+        "right_knee": 161.09127448992822,
+        "left_knee": 144.9605659347313,
+        "right_elbow": 159.19141099153018,
+        "left_elbow": 132.7628851090844,
+        "right_hip": 122.31317412074577,
+        "left_hip": 164.61319393235473,
+        "shoulder_line_angle": 3.369081962154986,
+        "hip_line_angle": -27.624022400575768
+      }
+    },
+    {
+      "movement_index": 16,
+      "movement_name": "right_walking_middle_punch_5",
+      "itf_name": "Ap Kubi Kaunde Jirugi (R)",
+      "source_frame": 807,
+      "angles": {
+        "right_knee": 170.57997874946278,
+        "left_knee": 175.49761366406796,
+        "right_elbow": 98.02135250394721,
+        "left_elbow": 40.42524980693532,
+        "right_hip": 170.38221791214204,
+        "left_hip": 172.35810229602194,
+        "shoulder_line_angle": 4.035033426075239,
+        "hip_line_angle": -7.754121579920572
+      }
+    },
+    {
+      "movement_index": 17,
+      "movement_name": "right_l_stance_knifehand_block",
+      "itf_name": "Niunja Sogi Sonkal Makgi (R)",
+      "source_frame": 871,
+      "angles": {
+        "right_knee": 85.27579375825027,
+        "left_knee": 110.9882870016752,
+        "right_elbow": 132.61922841459932,
+        "left_elbow": 154.97132526309812,
+        "right_hip": 123.02941206591885,
+        "left_hip": 131.51270947524594,
+        "shoulder_line_angle": -2.7708636292983333,
+        "hip_line_angle": 7.121524177730037
+      }
+    },
+    {
+      "movement_index": 18,
+      "movement_name": "left_walking_middle_punch_5",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L)",
+      "source_frame": 921,
+      "angles": {
+        "right_knee": 159.95664838565673,
+        "left_knee": 170.25623425433832,
+        "right_elbow": 98.18488744282723,
+        "left_elbow": 104.39259855873793,
+        "right_hip": 163.09232032350738,
+        "left_hip": 138.40730880807914,
+        "shoulder_line_angle": 14.064188880662858,
+        "hip_line_angle": 13.719262319357252
+      }
+    },
+    {
+      "movement_index": 19,
+      "movement_name": "left_walking_middle_punch_final",
+      "itf_name": "Ap Kubi Kaunde Jirugi (L) — final",
+      "source_frame": 949,
+      "angles": {
+        "right_knee": 176.68726221770143,
+        "left_knee": 173.53492146810683,
+        "right_elbow": 83.42218131906908,
+        "left_elbow": 91.71488581044193,
+        "right_hip": 154.6885896552394,
+        "left_hip": 132.31336273799934,
+        "shoulder_line_angle": -7.986612010101812,
+        "hip_line_angle": 5.998512645763173
+      }
+    },
+    {
+      "movement_index": 20,
+      "movement_name": "movement_20",
+      "itf_name": "Movement 20",
+      "source_frame": 1007,
+      "angles": {
+        "right_knee": 142.03195313718734,
+        "left_knee": 140.70934535923422,
+        "right_elbow": 25.004971625200625,
+        "left_elbow": 36.97185652498789,
+        "right_hip": 165.29674712175515,
+        "left_hip": 137.81823441475925,
+        "shoulder_line_angle": 5.892295972510576,
+        "hip_line_angle": 3.0106370199535055
+      }
+    },
+    {
+      "movement_index": 21,
+      "movement_name": "movement_21",
+      "itf_name": "Movement 21",
+      "source_frame": 1048,
+      "angles": {
+        "right_knee": 163.23930158766555,
+        "left_knee": 173.49394173958015,
+        "right_elbow": 80.08299742455883,
+        "left_elbow": 149.84734710153617,
+        "right_hip": 130.99797700579856,
+        "left_hip": 168.27932275706647,
+        "shoulder_line_angle": -25.414124490770163,
+        "hip_line_angle": -5.051404000104774
+      }
+    },
+    {
+      "movement_index": 22,
+      "movement_name": "movement_22",
+      "itf_name": "Movement 22",
+      "source_frame": 1086,
+      "angles": {
+        "right_knee": 143.95964434451906,
+        "left_knee": 131.07219762018667,
+        "right_elbow": 143.43602661698432,
+        "left_elbow": 136.19248296448924,
+        "right_hip": 171.93005287082758,
+        "left_hip": 149.6670125643439,
+        "shoulder_line_angle": 179.22035396210055,
+        "hip_line_angle": 168.68343632328336
+      }
+    },
+    {
+      "movement_index": 23,
+      "movement_name": "movement_23",
+      "itf_name": "Movement 23",
+      "source_frame": 1125,
+      "angles": {
+        "right_knee": 121.19597366670611,
+        "left_knee": 120.06543587526255,
+        "right_elbow": 155.5629607932939,
+        "left_elbow": 145.02997800875735,
+        "right_hip": 160.32049064621268,
+        "left_hip": 158.6466075757216,
+        "shoulder_line_angle": -171.23485165546515,
+        "hip_line_angle": 177.0214628453553
+      }
+    },
+    {
+      "movement_index": 24,
+      "movement_name": "movement_24",
+      "itf_name": "Movement 24",
+      "source_frame": 1175,
+      "angles": {
+        "right_knee": 86.4848860712607,
+        "left_knee": 123.37076100780833,
+        "right_elbow": 109.46221176612417,
+        "left_elbow": 162.7777675413752,
+        "right_hip": 120.71232971404154,
+        "left_hip": 144.77127899166987,
+        "shoulder_line_angle": -168.26399388437173,
+        "hip_line_angle": -176.43873067482892
+      }
+    }
+  ]
+}
