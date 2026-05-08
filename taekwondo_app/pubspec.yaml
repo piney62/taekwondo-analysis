@@ -1,0 +1,42 @@
+name: taekwondo_app
+description: "ITF Taekwondo poomsae analysis — on-device pose comparison with LLM feedback."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # HTTP for LLM relay (Layer 5)
+  http: ^1.2.2
+
+  # JSON parsing
+  collection: ^1.19.1
+
+  # Video playback (analysis screen)
+  video_player: ^2.9.2
+
+  # Pose extraction (Layer 1 — native only, added when implementing mobile camera)
+  # google_mlkit_pose_detection: ^0.12.0
+  # camera: ^0.11.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/master_data/chon_ji/keyposes_angles.json
+    - assets/master_data/do_san/keyposes_angles.json
+    - assets/test_data/chon_ji/master_poses.json
+    - assets/test_data/chon_ji/student_poses.json
+    - assets/test_data/chon_ji/student3_poses.json
